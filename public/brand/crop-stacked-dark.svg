@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 340" width="360" height="340" role="img"><title>CROP stacked logo</title><g transform="translate(80,0)"><g>
+    <line x1="51.7" y1="79.1" x2="40.1" y2="76.0" stroke="#F2BE4A" stroke-width="4.5" stroke-linecap="round"/><line x1="58.4" y1="64.2" x2="48.4" y2="57.6" stroke="#F2BE4A" stroke-width="4.5" stroke-linecap="round"/><line x1="69.6" y1="52.3" x2="62.3" y2="42.8" stroke="#F2BE4A" stroke-width="4.5" stroke-linecap="round"/><line x1="83.9" y1="44.7" x2="80.1" y2="33.3" stroke="#F2BE4A" stroke-width="4.5" stroke-linecap="round"/><line x1="100.0" y1="42.0" x2="100.0" y2="30.0" stroke="#F2BE4A" stroke-width="4.5" stroke-linecap="round"/><line x1="116.1" y1="44.7" x2="119.9" y2="33.3" stroke="#F2BE4A" stroke-width="4.5" stroke-linecap="round"/><line x1="130.4" y1="52.3" x2="137.7" y2="42.8" stroke="#F2BE4A" stroke-width="4.5" stroke-linecap="round"/><line x1="141.6" y1="64.2" x2="151.6" y2="57.6" stroke="#F2BE4A" stroke-width="4.5" stroke-linecap="round"/><line x1="148.3" y1="79.1" x2="159.9" y2="76.0" stroke="#F2BE4A" stroke-width="4.5" stroke-linecap="round"/>
+    <circle cx="100" cy="92" r="40" fill="#F2BE4A"/>
+    <rect x="96.5" y="58" width="7" height="34" rx="2" fill="#0B1F4B"/>
+    <rect x="88" y="67" width="24" height="7" rx="2" fill="#0B1F4B"/>
+    <path d="M100 160 C82 150 60 148 42 154 L42 116 C60 110 82 112 100 122 Z" fill="#0B1F4B" stroke="#FFF8E7" stroke-width="5" stroke-linejoin="round"/>
+    <path d="M100 160 C118 150 140 148 158 154 L158 116 C140 110 118 112 100 122 Z" fill="#0B1F4B" stroke="#FFF8E7" stroke-width="5" stroke-linejoin="round"/>
+    <path d="M100 122 L100 160" stroke="#FFF8E7" stroke-width="5" stroke-linecap="round"/>
+    <path d="M52 124 C66 120 80 121 92 126 M52 134 C66 130 80 131 92 136 M52 144 C66 140 80 141 92 146" stroke="#8DB4FF" stroke-width="2.4" fill="none" stroke-linecap="round" opacity=".55"/>
+    <path d="M148 124 C134 120 120 121 108 126 M148 134 C134 130 120 131 108 136 M148 144 C134 140 120 141 108 146" stroke="#8DB4FF" stroke-width="2.4" fill="none" stroke-linecap="round" opacity=".55"/>
+    <path d="M24 128 C22 160 52 184 100 186 C148 184 178 160 176 128 C170 150 140 170 100 170 C60 170 30 150 24 128 Z" fill="#4FD1BD"/>
+    <path d="M24 128 C26 118 32 112 38 110 C34 120 34 126 36 134 Z M176 128 C174 118 168 112 162 110 C166 120 166 126 164 134 Z" fill="#4FD1BD"/>
+    <path d="M100 172 L100 182" stroke="#E3A92B" stroke-width="3" stroke-linecap="round"/>
+    <path d="M100 176 C92 176 88 170 88 166 C94 166 100 169 100 176 Z M100 176 C108 176 112 170 112 166 C106 166 100 169 100 176 Z" fill="#F2BE4A"/>
+  </g></g>
+  <text x="180" y="256" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="76" font-weight="700" fill="#FFF8E7" letter-spacing="6">CROP</text>
+  <text x="180" y="284" text-anchor="middle" font-family="'Segoe UI', Arial, Helvetica, sans-serif" font-size="15" font-weight="700" fill="#F2BE4A" letter-spacing="2">CHILD RESCUE OPERATION PROGRAMMES</text>
+  <text x="180" y="308" text-anchor="middle" font-family="'Segoe UI', Arial, Helvetica, sans-serif" font-size="12.5" fill="#FFF8E7" opacity=".8">A Children's Wing of Fodan Gospel Outreach</text></svg>
