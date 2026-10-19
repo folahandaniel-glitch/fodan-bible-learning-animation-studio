@@ -254,3 +254,26 @@ export async function restoreVersionAction(pageId: string, _: R | null, f: FormD
 
 // ───────── generic simple records (wings, FAQs, events, testimonies, timeline, plans, training, enquiries) ─────────
 void requireUser; void and;
+
+export async function approveAllAction(scope: "lessons" | "stories" | "all", _: R | null, f: FormData): Promise<R> {
+  const u = await requireAdmin("content.review");
+  return run(async () => {
+    if (f.get("confirm") !== "on") throw new Error("Tick the box to confirm that you are approving this content as its reviewer.");
+    const { approveAndPublishAll } = await import("@/server/services/bulk-review");
+    const r = await approveAndPublishAll(await actorOf(u), { id: u.id, role: u.role }, scope);
+    revalidatePath("/admin/review"); revalidatePath("/", "layout");
+    return { ok: true, message: `Approved and published ${r.lessons} lessons and ${r.stories} stories.` };
+  });
+}
+
+export async function approvePublishOneAction(_: R | null, f: FormData): Promise<R> {
+  const u = await requireAdmin("content.review");
+  return run(async () => {
+    const db = await getDb(); const id = str(f, "id"); const kind = str(f, "kind");
+    if (kind === "lesson") await db.update(schema.lessons).set({ reviewStatus: "approved", status: "published", reviewerId: u.id, updatedAt: new Date() }).where(and(eq(schema.lessons.id, id), eq(schema.lessons.contentLevel, "complete")));
+    else await db.update(schema.stories).set({ reviewStatus: "approved", status: "published", updatedAt: new Date() }).where(eq(schema.stories.id, id));
+    await audit(await actorOf(u), `content.approve_publish_${kind}`, { type: kind, id });
+    revalidatePath("/admin/review"); revalidatePath("/", "layout");
+    return { ok: true, message: "Approved and published." };
+  });
+}
