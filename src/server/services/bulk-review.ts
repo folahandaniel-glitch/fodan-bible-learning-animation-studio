@@ -30,3 +30,14 @@ export async function approveAndPublishAll(actor: Actor, user: { id: string; rol
   await audit(actor, "content.approve_all", undefined, { scope, lessons, stories });
   return { lessons, stories };
 }
+
+/** Publishes every question that is still draft or under review (archived ones are left alone). */
+export async function approveAllQuestions(actor: Actor, user: { id: string; role: Role }) {
+  if (!can(user.role, "questions.write") || !can(user.role, "content.review")) throw new Error("Only a reviewer can publish questions.");
+  const db = await getDb();
+  const rows = await db.select({ id: schema.questions.id }).from(schema.questions).where(inArray(schema.questions.status, ["draft", "review"]));
+  const ids = rows.map((r) => r.id);
+  if (ids.length) await db.update(schema.questions).set({ status: "published", reviewerId: user.id, updatedAt: new Date() }).where(inArray(schema.questions.id, ids));
+  await audit(actor, "content.approve_all_questions", undefined, { questions: ids.length });
+  return { questions: ids.length };
+}

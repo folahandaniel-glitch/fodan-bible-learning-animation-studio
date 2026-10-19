@@ -189,8 +189,10 @@ export async function saveQuestionAction(_: R | null, f: FormData): Promise<R> {
     }
     const cl = str(f, "classLevelSlug") || null; const idx = cl ? (await db.select({ s: schema.classLevels.sort }).from(schema.classLevels).where(eq(schema.classLevels.slug, cl)))[0]?.s ?? null : null;
     const ref = str(f, "ref"); if (ref && !parseRanges(ref).length) throw new Error("That Bible reference is not recognised.");
-    await db.insert(schema.questions).values({ type, text, options, acceptedAnswers: (type === "fill" || type === "short") ? lines(f, "accepted") : [], rubric: str(f, "rubric") || null, explanation: str(f, "explanation"), ref: ref || null, classLevelSlug: cl, classMin: idx, classMax: idx, topic: str(f, "topic") || null, difficulty: Math.max(1, Math.min(3, Number(str(f, "difficulty")) || 2)), tags: str(f, "tags").split(",").map((t) => t.trim()).filter(Boolean), marks: Math.max(1, Number(str(f, "marks")) || 1), status: str(f, "status") === "published" ? "published" : "draft", authorId: u.id, source: str(f, "source") || null, licence: str(f, "licence") || null });
-    await audit(await actorOf(u), "question.create", { type: "question" }); revalidatePath("/admin/questions");
+    const row = { type, text, options, acceptedAnswers: (type === "fill" || type === "short") ? lines(f, "accepted") : [], rubric: str(f, "rubric") || null, explanation: str(f, "explanation"), ref: ref || null, classLevelSlug: cl, classMin: idx, classMax: idx, topic: str(f, "topic") || null, difficulty: Math.max(1, Math.min(3, Number(str(f, "difficulty")) || 2)), tags: str(f, "tags").split(",").map((t) => t.trim()).filter(Boolean), marks: Math.max(1, Number(str(f, "marks")) || 1), status: str(f, "status") === "published" ? "published" : "draft", authorId: u.id, source: str(f, "source") || null, licence: str(f, "licence") || null } as typeof schema.questions.$inferInsert;
+    const qid = str(f, "id");
+    if (qid) await db.update(schema.questions).set({ ...row, updatedAt: new Date() }).where(eq(schema.questions.id, qid)); else await db.insert(schema.questions).values(row);
+    await audit(await actorOf(u), qid ? "question.update" : "question.create", { type: "question", id: qid || undefined }); revalidatePath("/admin/questions");
   }, "Question saved.");
 }
 
@@ -275,5 +277,16 @@ export async function approvePublishOneAction(_: R | null, f: FormData): Promise
     await audit(await actorOf(u), `content.approve_publish_${kind}`, { type: kind, id });
     revalidatePath("/admin/review"); revalidatePath("/", "layout");
     return { ok: true, message: "Approved and published." };
+  });
+}
+
+export async function approveAllQuestionsAction(_: R | null, f: FormData): Promise<R> {
+  const u = await requireAdmin("questions.write");
+  return run(async () => {
+    if (f.get("confirm") !== "on") throw new Error("Tick the box to confirm you are approving these questions as reviewer.");
+    const { approveAllQuestions } = await import("@/server/services/bulk-review");
+    const r = await approveAllQuestions(await actorOf(u), { id: u.id, role: u.role });
+    revalidatePath("/admin/questions");
+    return { ok: true, message: `Published ${r.questions} questions.` };
   });
 }
