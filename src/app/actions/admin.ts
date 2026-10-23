@@ -1,4 +1,5 @@
 "use server";
+import { PAGE_TEXT } from "@/server/page-text";
 import { revalidatePath } from "next/cache";
 import { and, eq, sql } from "drizzle-orm";
 import { getDb, schema } from "@/server/db";
@@ -133,7 +134,7 @@ export async function testEmailAction(_: R | null, f: FormData): Promise<R> {
     return r.status === "sent" ? { ok: true, message: "Sent through the e-mail provider." } : { error: r.status === "held" ? "E-mail is not configured, so the message was held and NOT sent." : "The provider rejected the message. Check the sending domain." };
   });
 }
-const SETTINGS_KEYS = new Set(["brand", "contact", "social", "nav", "footer", "features", "terms", "doctrine"]);
+const SETTINGS_KEYS = new Set(["pageText", "brand", "contact", "social", "nav", "footer", "features", "terms", "doctrine"]);
 export async function saveSettingAction(key: string, _: R | null, f: FormData): Promise<R> {
   const u = await requireAdmin(key === "brand" ? "branding.edit" : "site.edit");
   return run(async () => {
@@ -147,6 +148,7 @@ export async function saveSettingAction(key: string, _: R | null, f: FormData): 
     else if (key === "footer") { const c = cur as Awaited<ReturnType<typeof getSetting<"footer">>>; value = { about: str(f, "about"), copyright: str(f, "copyright"), links: str(f, "lines").split("\n").map((l) => l.trim()).filter(Boolean).map((l) => { const [label, href] = l.split("|").map((x) => x.trim()); if (!label || !href || !/^(\/(?!\/)|https?:\/\/)/.test(href)) throw new Error(`Each link must look like: Label | /address  (problem: "${l}")`); return { label, href }; }) }; void c; }
     else if (key === "features") { const c = cur as Awaited<ReturnType<typeof getSetting<"features">>>; value = { ...c, registrationOpen: { student: f.get("r_student") === "on", parent: f.get("r_parent") === "on", teacher: f.get("r_teacher") === "on", org_admin: f.get("r_org_admin") === "on" }, loginMode: ["both", "email", "username"].includes(str(f, "loginMode")) ? str(f, "loginMode") : "both", bibleReaderPublic: f.get("bibleReaderPublic") === "on", teacherRequiresSubscription: f.get("teacherRequiresSubscription") === "on", graceDays: Math.max(0, Math.min(60, Number(str(f, "graceDays")) || 0)), requireReviewBeforePublish: f.get("requireReviewBeforePublish") === "on" }; }
     else if (key === "terms") { value = str(f, "lines").split("\n").map((l) => l.trim()).filter(Boolean).slice(0, 6).map((name, i) => ({ n: i + 1, name })); if (!(value as unknown[]).length) throw new Error("Enter at least one term."); }
+    else if (key === "pageText") { const out: Record<string, { kicker?: string; title?: string; subtitle?: string }> = {}; for (const id of Object.keys(PAGE_TEXT)) { const t = { kicker: str(f, `${id}.kicker`).slice(0, 120), title: str(f, `${id}.title`).slice(0, 200), subtitle: str(f, `${id}.subtitle`).slice(0, 1200) }; if (t.kicker || t.title || t.subtitle) out[id] = t; } value = out; }
     else if (key === "doctrine") value = { position: str(f, "position").slice(0, 4000) };
     await setSetting(key as SettingKey, value, u.id);
     await audit(await actorOf(u), "settings.update", { type: "setting", id: key });

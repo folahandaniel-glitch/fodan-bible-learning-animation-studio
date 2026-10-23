@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
+import { SitePageHeader } from "@/components/site-page-header";
 import Link from "next/link";
 import { getClassOutline, listClasses, progressSummary } from "@/server/services/content";
 import { optionalUser } from "@/server/guards";
 import { getEntitlement } from "@/server/services/entitlements";
-import { Crumbs, PageHeader, ProgressBar } from "@/components/ui";
+import { Crumbs, ProgressBar } from "@/components/ui";
 import { getDb, schema } from "@/server/db";
 import { and, eq } from "drizzle-orm";
 
@@ -27,7 +28,7 @@ export default async function LearnIndex({ searchParams }: { searchParams: Promi
   return (
     <div className="container-page py-10">
       <Crumbs items={[{ label: "Lessons" }]} />
-      <PageHeader title="Lessons" subtitle="Choose a class to see its ready lessons." />
+      <SitePageHeader id="lessons" />
       <nav aria-label="Classes" className="mb-6 flex flex-wrap gap-2">{classes.map((c) => <Link key={c.id} href={`/learn?class=${c.slug}`} aria-current={c.slug === slug ? "page" : undefined} className={`btn btn-sm ${c.slug === slug ? "btn-navy" : "btn-ghost"}`}>{c.name}</Link>)}</nav>
       {user?.role === "student" && !ent?.active && <div className="alert alert-warn mb-6">Your plan is not active yet, so only free sample lessons open. <Link href="/plans" className="font-bold">Choose a plan</Link> to unlock everything.</div>}
       {prog && prog.total > 0 && <div className="card card-pad mb-6 max-w-xl"><p className="mb-2 font-semibold">Your progress in {outline?.cls.name}</p><ProgressBar value={prog.done} max={prog.total} label="Lessons completed" /></div>}

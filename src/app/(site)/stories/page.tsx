@@ -3,7 +3,7 @@ import Link from "next/link";
 import { listStories } from "@/server/services/content";
 import { optionalUser } from "@/server/guards";
 import { SceneArt } from "@/components/scene-art";
-import { PageHeader } from "@/components/ui";
+import { SitePageHeader } from "@/components/site-page-header";
 import { getDb, schema } from "@/server/db";
 
 export const metadata: Metadata = { title: "Bible story library" };
@@ -16,7 +16,7 @@ export default async function Stories({ searchParams }: { searchParams: Promise<
   const stories = await listStories(user, { q: sp.q, testament: sp.t === "OT" || sp.t === "NT" ? sp.t : undefined, classSlug: sp.c });
   return (
     <div className="container-page py-10">
-      <PageHeader kicker="Genesis to Revelation" title="Bible story library" subtitle="Stories and teaching units across the whole Bible, with passage-based background, discussion questions and memory verses. Books of law, poetry, prophecy and letters are taught in formats that suit them." actions={<Link href="/library/coverage" className="btn btn-ghost btn-sm">Coverage of all 66 books</Link>} />
+      <SitePageHeader id="stories" actions={<Link href="/library/coverage" className="btn btn-ghost btn-sm">Coverage of all 66 books</Link>} />
       {!user && <div className="alert alert-info mb-6 text-sm">You are viewing the free public stories. <Link href="/register/student" className="font-bold">Register</Link> and choose a plan to open the whole library.</div>}
       <form className="card card-pad mb-6 grid gap-3 sm:grid-cols-4" role="search">
         <div className="sm:col-span-2"><label className="label" htmlFor="q">Search</label><input id="q" name="q" defaultValue={sp.q} className="input" placeholder="Title, passage or word" /></div>

@@ -44,12 +44,12 @@ export function Field({ label, name, type = "text", required, hint, defaultValue
   );
 }
 
-export function TextArea({ label, name, defaultValue, rows = 5, hint, required, maxLength }: { label: string; name: string; defaultValue?: string; rows?: number; hint?: string; required?: boolean; maxLength?: number }) {
+export function TextArea({ label, name, defaultValue, rows = 5, hint, required, maxLength, placeholder }: { label: string; name: string; placeholder?: string; defaultValue?: string; rows?: number; hint?: string; required?: boolean; maxLength?: number }) {
   const id = useId();
   return (
     <div>
       <label htmlFor={id} className="label">{label}</label>
-      <textarea id={id} name={name} rows={rows} defaultValue={defaultValue} required={required} maxLength={maxLength} className="input" aria-describedby={hint ? `${id}-h` : undefined} />
+      <textarea id={id} name={name} placeholder={placeholder} rows={rows} defaultValue={defaultValue} required={required} maxLength={maxLength} className="input" aria-describedby={hint ? `${id}-h` : undefined} />
       {hint && <p id={`${id}-h`} className="hint">{hint}</p>}
     </div>
   );

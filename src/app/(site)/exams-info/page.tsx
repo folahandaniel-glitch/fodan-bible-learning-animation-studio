@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { PageHeader } from "@/components/ui";
+import { SitePageHeader } from "@/components/site-page-header";
 
 export const metadata: Metadata = { title: "CBT examinations and competitions" };
 
 export default function ExamsInfo() {
   return (
     <div className="container-page max-w-3xl py-10">
-      <PageHeader kicker="CBT Centre" title="CBT examinations and competitions" subtitle="A computer-based testing centre built for Bible knowledge." />
+      <SitePageHeader id="exams" />
       <div className="prose-fbl">
         <h2>How exams work</h2>
         <ul><li>Timed exams with a server-controlled clock and an on-screen countdown.</li><li>Questions and answer options can be shuffled; the answer key never reaches the browser while you take the exam.</li><li>Answers save automatically and survive a short loss of connection.</li><li>Objective questions are marked by the server; essays and short answers are marked by teachers.</li><li>Explanations and results appear according to the teacher&apos;s release settings.</li></ul>

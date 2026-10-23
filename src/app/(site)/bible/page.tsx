@@ -4,7 +4,7 @@ import { BOOKS, isTranslation, parseRanges, TRANSLATIONS, type TranslationId } f
 import { getPassages, searchBible } from "@/server/bible-data";
 import { getSetting } from "@/server/settings";
 import { BibleText } from "@/components/bible-text";
-import { PageHeader } from "@/components/ui";
+import { SitePageHeader } from "@/components/site-page-header";
 import { optionalUser } from "@/server/guards";
 
 export const metadata: Metadata = { title: "Read the Bible" };
@@ -19,7 +19,7 @@ export default async function BibleIndex({ searchParams }: { searchParams: Promi
   const found = sp.q ? searchBible(sp.q, tr === "wlc" || tr === "tr" ? "kjv" : tr, 30) : [];
   return (
     <div className="container-page py-10">
-      <PageHeader title="Read the Bible" subtitle="Public-domain translations loaded for offline-friendly reading: King James Version, Berean Standard Bible, American Standard Version, the Hebrew Old Testament (WLC) and the Greek New Testament (Textus Receptus)." />
+      <SitePageHeader id="bible" />
       <div className="mb-6 flex flex-wrap gap-2" role="group" aria-label="Translation">{TRANSLATIONS.map((t) => <Link key={t.id} href={`/bible?t=${t.id}`} aria-current={t.id === tr ? "true" : undefined} className={`btn btn-sm ${t.id === tr ? "btn-navy" : "btn-ghost"}`} title={`${t.full}: ${t.licence}`}>{t.name}</Link>)}</div>
       <div className="mb-8 grid gap-4 md:grid-cols-2">
         <form className="card card-pad" role="search"><input type="hidden" name="t" value={tr} /><label className="label" htmlFor="ref">Go to a passage</label><div className="flex gap-2"><input id="ref" name="ref" defaultValue={sp.ref} className="input" placeholder="John 3:16-21" /><button className="btn btn-primary" type="submit">Go</button></div>{sp.ref && !parseRanges(sp.ref).length && <p className="mt-2 text-sm text-danger">That is not a recognised reference. Try &ldquo;Romans 8:1-11&rdquo;.</p>}</form>

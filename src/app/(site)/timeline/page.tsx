@@ -3,7 +3,7 @@ import Link from "next/link";
 import { asc } from "drizzle-orm";
 import { getDb, schema } from "@/server/db";
 import { rawSetting } from "@/server/settings";
-import { PageHeader } from "@/components/ui";
+import { SitePageHeader } from "@/components/site-page-header";
 import { BibleMap } from "@/components/bible-map";
 import { SceneArt } from "@/components/scene-art";
 
@@ -18,7 +18,7 @@ export default async function TimelinePage({ searchParams }: { searchParams: Pro
   const events = all.filter((e) => !sp.era || e.era === sp.era);
   return (
     <div className="container-page py-10">
-      <PageHeader kicker="Genesis to Revelation" title="Interactive Bible timeline" subtitle={meta.intro} />
+      <SitePageHeader id="timeline" fallbackSubtitle={meta.intro} />
       <div className="alert alert-warn mb-6 text-sm"><strong>About dates:</strong> {meta.note} Events are shown in <em>biblical narrative order</em>. A date label marked &ldquo;uncertain&rdquo; is approximate or debated and is never presented as settled.</div>
       <nav aria-label="Periods" className="mb-6 flex flex-wrap gap-2"><Link href="/timeline" className={`btn btn-sm ${!sp.era ? "btn-navy" : "btn-ghost"}`}>All periods</Link>{meta.eras.map((e) => <Link key={e.key} href={`/timeline?era=${e.key}`} className={`btn btn-sm ${sp.era === e.key ? "btn-navy" : "btn-ghost"}`}>{e.label}</Link>)}</nav>
       <ol className="relative space-y-4 border-l-4 border-gold pl-6">

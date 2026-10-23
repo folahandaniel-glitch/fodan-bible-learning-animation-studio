@@ -47,6 +47,7 @@ export const DEFAULTS = {
   },
   terms: [{ n: 1, name: "Term 1" }, { n: 2, name: "Term 2" }, { n: 3, name: "Term 3" }] as { n: number; name: string }[],
   logoPlacements: {} as Record<string, { light?: string; dark?: string }>,
+  pageText: {} as Record<string, { kicker?: string; title?: string; subtitle?: string }>,
   maintenance: { suspended: false, message: "This service is temporarily unavailable. Please check back soon." },
   doctrine: {
     position: "This platform teaches from the Bible as the inspired Word of God and affirms the historic Christian faith. Where faithful Christians differ (for example on the timing and details of the end times), lessons present the main views fairly and say plainly that they are disputed. The ministry's approved doctrinal statement is edited by the Super Admin.",

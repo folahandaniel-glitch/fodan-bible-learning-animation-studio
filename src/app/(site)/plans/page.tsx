@@ -5,7 +5,7 @@ import { getDb, schema } from "@/server/db";
 import { optionalUser } from "@/server/guards";
 import { money, getProvider } from "@/server/services/payments";
 import { FEATURES } from "@/server/services/entitlements";
-import { PageHeader } from "@/components/ui";
+import { SitePageHeader } from "@/components/site-page-header";
 import { ActionForm, Check, Select } from "@/components/forms";
 import { checkoutAction, trialAction } from "@/app/actions/pay";
 import { childrenOf } from "@/server/services/auth";
@@ -23,7 +23,7 @@ export default async function Plans() {
   const forMe = (a: string) => !user || (a === "student" ? user.role === "student" || user.role === "parent" : a === "family" ? user.role === "parent" : a === "teacher" ? user.role === "teacher" : user.role === "org_admin");
   return (
     <div className="container-page py-10">
-      <PageHeader kicker="Subscriptions" title="Plans and prices" subtitle="All prices and conditions are shown here before you pay. Protected lessons, quizzes, examinations and games open only after the server has confirmed your payment." />
+      <SitePageHeader id="plans" />
       {!live.length ? (
         <div className="card card-pad text-center"><h2 className="text-2xl font-bold">Plans are being set up</h2><p className="mx-auto mt-2 max-w-xl text-mist">The ministry has not published prices yet. You can still register, explore the free sample lessons and public stories, and read the Bible. Please check back soon or <Link href="/contact">contact us</Link>.</p></div>
       ) : (

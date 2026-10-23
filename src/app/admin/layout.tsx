@@ -20,6 +20,7 @@ const ITEMS: (NavItem & { perm: Perm })[] = [
   { href: "/admin/data/enquiries", label: "Enquiries", perm: "site.edit" },
   { href: "/admin/brand", label: "Branding and logos", perm: "branding.edit" },
   { href: "/admin/settings", label: "Settings and menus", perm: "site.edit" },
+  { href: "/admin/page-text", label: "Page text", perm: "site.edit" },
   { href: "/admin/emails", label: "E-mail templates", perm: "emails.edit" },
   { href: "/admin/users", label: "Users and roles", perm: "users.manage" },
   { href: "/admin/orgs", label: "Churches and schools", perm: "orgs.manage" },

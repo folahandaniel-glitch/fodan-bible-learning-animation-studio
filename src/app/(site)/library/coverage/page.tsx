@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getDb, schema } from "@/server/db";
 import { BOOKS, bookOfRef, parseRanges } from "@/lib/bible";
-import { PageHeader } from "@/components/ui";
+import { SitePageHeader } from "@/components/site-page-header";
 
 export const metadata: Metadata = { title: "Coverage of all 66 books" };
 
@@ -18,7 +18,7 @@ export default async function Coverage() {
   const covered = rows.filter((r) => r.st.length).length;
   return (
     <div className="container-page py-10">
-      <PageHeader title="Coverage of all 66 books" subtitle={`${covered} of 66 books have a story or teaching unit today. Books of law, poetry, prophecy and letters are taught in formats that suit them, not as forced stories. Books with no unit yet are still being developed.`} />
+      <SitePageHeader id="coverage" vars={{ covered }} />
       <div className="card overflow-x-auto"><table className="table"><thead><tr><th>Book</th><th>Kind of writing</th><th>Story / teaching units</th><th>Curriculum topics</th><th>Full lessons</th></tr></thead><tbody>
         {rows.map(({ b, st, full, topics }) => <tr key={b.i}><td className="font-semibold">{b.name}</td><td>{b.genre}</td><td>{st.length ? st.map((s) => <Link key={s.slug} href={`/stories/${s.slug}`} className="mr-2 inline-block">{s.title}</Link>) : <span className="badge badge-warn">Not yet developed</span>}</td><td>{topics}</td><td>{full}</td></tr>)}
       </tbody></table></div>
