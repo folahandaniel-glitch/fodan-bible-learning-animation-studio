@@ -3,6 +3,7 @@ import type { CSSProperties, ReactNode } from "react";
 import "./globals.css";
 import { getSetting } from "@/server/settings";
 
+import { organizationJsonLd } from "@/lib/seo-kit";
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -23,7 +24,8 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   const style = { "--color-royal": b.primary, "--color-navy": b.secondary, "--color-gold": b.accent, "--color-leaf": b.leaf, "--color-ivory": b.ivory } as CSSProperties;
   return (
     <html lang="en" style={style}>
-      <body>{children}</body>
+      <body>
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd()) }} />{children}</body>
     </html>
   );
 }

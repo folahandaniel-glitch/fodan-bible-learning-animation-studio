@@ -10,6 +10,7 @@ import { getDb, schema } from "@/server/db";
 import { and, eq, isNull, sql } from "drizzle-orm";
 import type { SessionUser } from "@/server/auth/session";
 
+import { FodanCredit } from "@/components/fodan-credit";
 export async function SiteHeader() {
   const [nav, extra, user] = await Promise.all([getSetting("nav"), navPages(), optionalUser()]);
   const items = [...nav, ...extra.map((p) => ({ label: p.title, href: `/p/${p.slug}` }))];
@@ -96,6 +97,7 @@ export async function SiteFooter() {
         </div>
       </div>
       <div className="border-t border-white/10 py-4 text-center text-xs text-[#aeb8d4]">© {new Date().getFullYear()} {footer.copyright} · {brand.ministry}</div>
+      <FodanCredit />
     </footer>
   );
 }
