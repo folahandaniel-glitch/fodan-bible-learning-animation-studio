@@ -9,8 +9,8 @@ const csv = (v: unknown) => `"${String(v ?? "").replace(/"/g, '""').replace(/^([
 /** Question bank export in the same column layout the importer reads (★ marks the correct options). */
 export async function GET() {
   const s = await getSession();
-  if (!s || !(can(s.user.role, "questions.write") || s.user.role === "teacher")) return new Response("Forbidden", { status: 403 });
-  const qs = await listQuestions({ id: s.user.id, role: s.user.role, orgId: s.user.orgId });
+  if (!s || !(can(s.user, "questions.write") || s.user.role === "teacher")) return new Response("Forbidden", { status: 403 });
+  const qs = await listQuestions({ id: s.user.id, role: s.user.role, extraPerms: s.user.extraPerms, orgId: s.user.orgId });
   await audit({ id: s.user.id, label: s.user.fullName, role: s.user.role }, "export.questions", undefined, { rows: qs.length });
   const head = ["Question", "A", "B", "C", "D", "E", "Correct", "Explanation", "Reference", "Class", "Topic", "Difficulty", "Tags", "Type"];
   const letters = "abcde";

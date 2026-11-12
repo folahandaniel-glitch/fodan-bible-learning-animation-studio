@@ -10,8 +10,8 @@ import type { Role } from "../db/schema";
  * Only full lessons are affected (framework entries have no content to publish), templates and archived items are never touched.
  * Recorded in the audit log with the reviewer's name and the counts.
  */
-export async function approveAndPublishAll(actor: Actor, user: { id: string; role: Role }, scope: "lessons" | "stories" | "all") {
-  if (!can(user.role, "content.review")) throw new Error("Only a reviewer can approve content.");
+export async function approveAndPublishAll(actor: Actor, user: { id: string; role: Role; extraPerms?: string[] }, scope: "lessons" | "stories" | "all") {
+  if (!can(user, "content.review")) throw new Error("Only a reviewer can approve content.");
   const db = await getDb();
   let lessons = 0, stories = 0;
   if (scope !== "stories") {
@@ -32,8 +32,8 @@ export async function approveAndPublishAll(actor: Actor, user: { id: string; rol
 }
 
 /** Publishes every question that is still draft or under review (archived ones are left alone). */
-export async function approveAllQuestions(actor: Actor, user: { id: string; role: Role }) {
-  if (!can(user.role, "questions.write") || !can(user.role, "content.review")) throw new Error("Only a reviewer can publish questions.");
+export async function approveAllQuestions(actor: Actor, user: { id: string; role: Role; extraPerms?: string[] }) {
+  if (!can(user, "questions.write") || !can(user, "content.review")) throw new Error("Only a reviewer can publish questions.");
   const db = await getDb();
   const rows = await db.select({ id: schema.questions.id }).from(schema.questions).where(inArray(schema.questions.status, ["draft", "review"]));
   const ids = rows.map((r) => r.id);

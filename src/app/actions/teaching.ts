@@ -79,7 +79,7 @@ export async function manualMarkAction(attemptId: string, qid: string, _: Action
 export async function createExamAction(_: ActionResult, f: FormData): Promise<ActionResult> {
   const u = await requireUser(["teacher", "org_admin", "super_admin", "curriculum_admin"]);
   return wrap(async () => {
-    if (!can(u.role, "exams.manage") && u.role !== "teacher" && u.role !== "org_admin") throw new Error("Not allowed.");
+    if (!can(u, "exams.manage") && u.role !== "teacher" && u.role !== "org_admin") throw new Error("Not allowed.");
     const title = str(f, "title"); if (title.length < 3) throw new Error("Give the exam a title.");
     const count = Math.max(1, Math.min(100, Number(str(f, "count")) || 10));
     const rule: ExamRule = { classLevelSlug: str(f, "classLevelSlug") || undefined, topic: str(f, "topic") || undefined, tag: str(f, "tag") || undefined, count };
@@ -91,7 +91,7 @@ export async function createExamAction(_: ActionResult, f: FormData): Promise<Ac
       durationMin: Math.max(1, Math.min(240, Number(str(f, "durationMin")) || 20)), rules: [rule], shuffleQuestions: f.get("shuffleQuestions") === "on", shuffleOptions: f.get("shuffleOptions") === "on",
       maxAttempts: Math.max(0, Number(str(f, "maxAttempts")) || 1), opensAt: str(f, "opensAt") ? new Date(str(f, "opensAt")) : null, closesAt: str(f, "closesAt") ? new Date(str(f, "closesAt")) : null,
       releaseResults: ["immediate", "after_close", "manual"].includes(str(f, "release")) ? str(f, "release") : "immediate", showExplanations: f.get("explanations") === "on", passMark: Math.max(0, Math.min(100, Number(str(f, "passMark")) || 50)),
-      isFree: can(u.role, "exams.manage") && f.get("isFree") === "on",
+      isFree: can(u, "exams.manage") && f.get("isFree") === "on",
     }).returning();
     const { audit } = await import("@/server/audit"); await audit(await actorOf(u), "exam.create", { type: "exam", id: e.id }, { title });
     revalidatePath("/teacher/exams"); revalidatePath("/admin/exams");
@@ -105,7 +105,7 @@ export async function examStatusAction(_: ActionResult, f: FormData): Promise<Ac
     const db = await getDb(); const id = str(f, "id"); const to = str(f, "to");
     const [e] = await db.select().from(schema.exams).where(eq(schema.exams.id, id));
     if (!e) throw new Error("Exam not found.");
-    if (!(can(u.role, "exams.manage") || e.createdBy === u.id || (u.role === "org_admin" && e.orgId === u.orgId))) throw new Error("Not allowed.");
+    if (!(can(u, "exams.manage") || e.createdBy === u.id || (u.role === "org_admin" && e.orgId === u.orgId))) throw new Error("Not allowed.");
     if (to === "published") { const { pickQuestions } = await import("@/server/services/exams"); const qs = await pickQuestions(db, e); if (!qs.length) throw new Error("No questions match this exam's rules yet, so it cannot be published."); }
     const set: Partial<typeof schema.exams.$inferInsert> = { status: to === "published" || to === "closed" || to === "draft" ? to : e.status, updatedAt: new Date() };
     if (to === "release") set.resultsReleased = true;

@@ -24,7 +24,7 @@ export default async function EditLesson({ params }: { params: Promise<{ id: str
   const versions = await db.select({ v: schema.lessonVersions.version, at: schema.lessonVersions.createdAt }).from(schema.lessonVersions).where(eq(schema.lessonVersions.lessonId, id)).orderBy(desc(schema.lessonVersions.createdAt)).limit(10);
   const classes = await db.select({ id: schema.classLevels.id, name: schema.classLevels.name }).from(schema.classLevels).orderBy(asc(schema.classLevels.sort));
   const b = l.body, t = l.teacherNotes;
-  const reviewer = can(user.role, "content.review");
+  const reviewer = can(user, "content.review");
   const passages = l.refs.flatMap((r) => getPassages(r, "kjv"));
   return (
     <div className="space-y-6">

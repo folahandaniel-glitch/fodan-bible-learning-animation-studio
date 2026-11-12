@@ -9,7 +9,7 @@ import type { Role } from "../db/schema";
 export const COOKIE = process.env.NODE_ENV === "production" ? "__Host-fbl_session" : "fbl_session";
 
 export interface SessionUser {
-  id: string; email: string | null; username: string | null; fullName: string; displayName: string; role: Role; status: string;
+  id: string; email: string | null; username: string | null; fullName: string; displayName: string; role: Role; extraPerms: string[]; status: string;
   mustChangePassword: boolean; orgId: string | null; classLevelSlug: string | null; totpEnabled: boolean;
 }
 export interface Ctx { ip: string | null; userAgent: string | null }
@@ -65,7 +65,7 @@ export async function resolveToken(token: string | undefined | null): Promise<Re
   if (u.status === "suspended" || u.status === "deactivated") return null;
   return {
     sessionId: row.sessionId, recentAuthAt: row.recentAuthAt, mfaOk: row.mfaOk,
-    user: { id: u.id, email: u.email, username: u.username, fullName: u.fullName, displayName: u.displayName, role: u.role, status: u.status, mustChangePassword: u.mustChangePassword, orgId: u.orgId, classLevelSlug: u.classLevelSlug, totpEnabled: u.totpEnabled },
+    user: { id: u.id, email: u.email, username: u.username, fullName: u.fullName, displayName: u.displayName, role: u.role, extraPerms: u.extraPerms ?? [], status: u.status, mustChangePassword: u.mustChangePassword, orgId: u.orgId, classLevelSlug: u.classLevelSlug, totpEnabled: u.totpEnabled },
   };
 }
 

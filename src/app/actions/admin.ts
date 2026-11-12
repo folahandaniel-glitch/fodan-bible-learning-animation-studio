@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { and, eq, sql } from "drizzle-orm";
 import { getDb, schema } from "@/server/db";
 import { actorOf, requireAdmin } from "@/server/guards";
-import { adminCreateUser, changeRole, eraseUser, issueTemporaryPassword, setUserOrg, setUserStatus } from "@/server/services/admin-users";
+import { adminCreateUser, changeRole, setExtraPerms, eraseUser, issueTemporaryPassword, setUserOrg, setUserStatus } from "@/server/services/admin-users";
 import { createAccessKey, requestPasswordReset } from "@/server/services/auth";
 import { changeEntitlement, grantEntitlement } from "@/server/services/entitlements";
 import { markDisputed, markRefunded, reconcile } from "@/server/services/payments";
@@ -39,6 +39,10 @@ export async function userStatusAction(_: R | null, f: FormData): Promise<R> {
 export async function roleAction(_: R | null, f: FormData): Promise<R> {
   const u = await requireAdmin("users.manage");
   return run(async () => { await changeRole(await actorOf(u), { id: u.id, role: u.role }, str(f, "id"), str(f, "role") as Role); revalidatePath("/admin/users"); return { ok: true, message: "Role changed. The user was signed out." }; });
+}
+export async function permsAction(_: R | null, f: FormData): Promise<R> {
+  const u = await requireAdmin("users.manage");
+  return run(async () => { const p = await setExtraPerms(await actorOf(u), { id: u.id, role: u.role }, str(f, "id"), f.getAll("perm").map(String)); revalidatePath("/admin/users"); return { ok: true, message: p.length ? `${p.length} permission(s) saved. Effective on their next page load.` : "Extra permissions removed." }; });
 }
 export async function resetEmailAction(_: R | null, f: FormData): Promise<R> {
   const u = await requireAdmin("users.manage");

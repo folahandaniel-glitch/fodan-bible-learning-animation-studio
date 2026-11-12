@@ -4,10 +4,10 @@ import { getDb, schema } from "@/server/db";
 import { requireAdmin } from "@/server/guards";
 import { assignableRoles } from "@/server/services/admin-users";
 import { ActionForm, Field, InlineAction, Select } from "@/components/forms";
-import { createUserAction, resetEmailAction, roleAction, tempPasswordAction, userStatusAction } from "@/app/actions/admin";
+import { createUserAction, permsAction, resetEmailAction, roleAction, tempPasswordAction, userStatusAction } from "@/app/actions/admin";
 import { approveTeacherAction } from "@/app/actions/teaching";
 import { PageHeader, StatusBadge } from "@/components/ui";
-import { ROLE_LABELS } from "@/lib/permissions";
+import { GRANTABLE, ROLE_LABELS } from "@/lib/permissions";
 
 export const metadata = { title: "Users and roles", robots: { index: false } };
 const PAGE = 25;
@@ -48,6 +48,21 @@ export default async function Users({ searchParams }: { searchParams: Promise<{ 
                 {me.role === "super_admin" && u.id !== me.id && u.role !== "developer_admin" && <InlineAction action={roleAction} label="Change role" hidden={{ id: u.id }}><select name="role" defaultValue={u.role} className="input !w-auto !min-h-0 !py-1 text-sm" aria-label="Role">{assignableRoles().map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}</select></InlineAction>}
               </div>
             </div>
+            {me.role === "super_admin" && u.role !== "super_admin" && u.role !== "student" && u.role !== "parent" && u.role !== "developer_admin" && (
+              <details className="mt-3 border-t border-line pt-3"><summary className="cursor-pointer text-sm font-bold">Admin permissions{u.extraPerms?.length ? ` (${u.extraPerms.length} granted)` : ""}</summary>
+                <ActionForm action={permsAction} submit="Save permissions" className="mt-3 space-y-3">
+                  <input type="hidden" name="id" value={u.id} />
+                  <p className="hint">Tick what this person may edit from the admin area, on top of their role. Changes apply on their next page load and are written to the audit log.</p>
+                  <div className="grid gap-4 md:grid-cols-3">
+                    {Array.from(new Set(GRANTABLE.map((g) => g.group))).map((grp) => (
+                      <fieldset key={grp} className="space-y-1"><legend className="text-xs font-bold uppercase tracking-wide text-mist">{grp}</legend>
+                        {GRANTABLE.filter((g) => g.group === grp).map((g) => <label key={g.perm} className="flex items-start gap-2 text-sm"><input type="checkbox" name="perm" value={g.perm} defaultChecked={u.extraPerms?.includes(g.perm)} className="mt-1" /><span>{g.label}</span></label>)}
+                      </fieldset>
+                    ))}
+                  </div>
+                </ActionForm>
+              </details>
+            )}
           </article>
         ))}
       </div>

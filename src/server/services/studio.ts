@@ -8,9 +8,9 @@ import { can } from "@/lib/permissions";
 import { saveAsset, checkDocx, LIMITS } from "./media";
 import type { ContentStatus, Role, Scene } from "../db/schema";
 
-export interface StudioUser { id: string; role: Role; orgId: string | null }
+export interface StudioUser { id: string; role: Role; extraPerms?: string[]; orgId: string | null }
 const slugify = (t: string) => t.toLowerCase().replace(/['’]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60) || "story";
-export const canAuthor = (u: StudioUser) => u.role === "teacher" || can(u.role, "stories.write");
+export const canAuthor = (u: StudioUser) => u.role === "teacher" || can(u, "stories.write");
 
 async function uniqueSlug(base: string) {
   const db = await getDb();
@@ -53,7 +53,7 @@ export async function loadForEdit(user: StudioUser, id: string) {
   const db = await getDb();
   const [s] = await db.select().from(schema.stories).where(eq(schema.stories.id, id));
   if (!s) return null;
-  if (!(can(user.role, "stories.write") || s.authorId === user.id)) return null;
+  if (!(can(user, "stories.write") || s.authorId === user.id)) return null;
   return s;
 }
 
@@ -71,7 +71,7 @@ function cleanScenes(scenes: Scene[]): Scene[] {
 export async function autosave(user: StudioUser, id: string, patch: StoryPatch) {
   const s = await loadForEdit(user, id);
   if (!s) throw new Error("Story not found.");
-  if (s.status === "published" && !can(user.role, "stories.write")) throw new Error("Published stories can only be edited by editors.");
+  if (s.status === "published" && !can(user, "stories.write")) throw new Error("Published stories can only be edited by editors.");
   const set: Partial<typeof schema.stories.$inferInsert> = { updatedAt: new Date() };
   if (patch.title !== undefined) set.title = patch.title.slice(0, 200);
   if (patch.subtitle !== undefined) set.subtitle = patch.subtitle.slice(0, 300);
@@ -81,7 +81,7 @@ export async function autosave(user: StudioUser, id: string, patch: StoryPatch) 
   if (patch.memoryVerseRef !== undefined) set.memoryVerseRef = patch.memoryVerseRef && parseRange(patch.memoryVerseRef) ? patch.memoryVerseRef : null;
   if (patch.discussion) set.discussion = patch.discussion.map((x) => String(x).slice(0, 400)).slice(0, 20);
   if (patch.classSlugs) set.classSlugs = patch.classSlugs;
-  if (patch.visibility && can(user.role, "stories.write")) set.visibility = patch.visibility === "public" ? "public" : "members";
+  if (patch.visibility && can(user, "stories.write")) set.visibility = patch.visibility === "public" ? "public" : "members";
   if (patch.detail) set.detail = patch.detail;
   const db = await getDb();
   await db.update(schema.stories).set(set).where(eq(schema.stories.id, id));
@@ -120,10 +120,10 @@ export async function versionsOf(user: StudioUser, id: string) {
 export async function setStatus(actor: Actor, user: StudioUser, id: string, to: ContentStatus) {
   const s = await loadForEdit(user, id);
   if (!s) throw new Error("Story not found.");
-  const reviewer = can(user.role, "content.review");
-  if (to === "review" && !(s.authorId === user.id || reviewer || can(user.role, "stories.write"))) throw new Error("Not allowed.");
+  const reviewer = can(user, "content.review");
+  if (to === "review" && !(s.authorId === user.id || reviewer || can(user, "stories.write"))) throw new Error("Not allowed.");
   if ((to === "approved" || to === "published") && !reviewer) throw new Error("Only a reviewer can approve or publish content.");
-  if (to === "archived" && !can(user.role, "stories.write")) throw new Error("Not allowed.");
+  if (to === "archived" && !can(user, "stories.write")) throw new Error("Not allowed.");
   const db = await getDb();
   await db.update(schema.stories).set({ status: to, reviewStatus: to === "approved" || to === "published" ? "approved" : to === "review" ? "in_review" : s.reviewStatus, updatedAt: new Date() }).where(eq(schema.stories.id, id));
   await audit(actor, `story.${to}`, { type: "story", id }, { title: s.title });

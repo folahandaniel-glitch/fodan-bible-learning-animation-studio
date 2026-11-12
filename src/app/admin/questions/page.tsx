@@ -16,7 +16,7 @@ export default async function Questions({ searchParams }: { searchParams: Promis
   const sp = await searchParams;
   const db = await getDb();
   const classes = await db.select({ slug: schema.classLevels.slug, name: schema.classLevels.name }).from(schema.classLevels).orderBy(asc(schema.classLevels.sort));
-  const qs = await listQuestions({ id: u.id, role: u.role, orgId: u.orgId }, { q: sp.q, classLevelSlug: sp.c, status: sp.s });
+  const qs = await listQuestions({ id: u.id, role: u.role, extraPerms: u.extraPerms, orgId: u.orgId }, { q: sp.q, classLevelSlug: sp.c, status: sp.s });
   const editing = sp.edit ? qs.find((x) => x.id === sp.edit) : undefined;
   const pending = qs.filter((x) => x.status === "draft" || x.status === "review").length;
   const letters = "abcdefgh";

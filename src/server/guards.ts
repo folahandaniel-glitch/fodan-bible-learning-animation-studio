@@ -1,7 +1,7 @@
 import "server-only";
 import { redirect } from "next/navigation";
 import { getSession, requestCtx, type SessionUser } from "./auth/session";
-import { can, homeFor, type Perm } from "@/lib/permissions";
+import { can, hasAdminAccess, homeFor, type Perm } from "@/lib/permissions";
 import type { Actor } from "./audit";
 import type { Role } from "./db/schema";
 import { getSetting } from "./settings";
@@ -22,8 +22,9 @@ export async function requireUser(roles?: Role[], opts: Opts = {}): Promise<Sess
 }
 
 export async function requireAdmin(perm?: Perm): Promise<SessionUser> {
-  const u = await requireUser(["super_admin", "curriculum_admin", "content_editor", "media_admin", "finance_admin"]);
-  if (!can(u.role, "admin.access") || (perm && !can(u.role, perm))) redirect("/admin?denied=1");
+  const u = await requireUser();
+  if (!hasAdminAccess(u)) redirect(homeFor(u.role));
+  if (perm && !can(u, perm)) redirect("/admin?denied=1");
   return u;
 }
 

@@ -9,7 +9,7 @@ const csv = (v: unknown) => `"${String(v ?? "").replace(/"/g, '""').replace(/^([
 
 export async function GET(req: Request) {
   const s = await getSession();
-  if (!s || !can(s.user.role, "audit.view")) return new Response("Forbidden", { status: 403 });
+  if (!s || !can(s.user, "audit.view")) return new Response("Forbidden", { status: 403 });
   const q = new URL(req.url).searchParams.get("q");
   const db = await getDb();
   const rows = await db.select().from(schema.auditLogs).where(and(eq(schema.auditLogs.plane, "app"), q ? ilike(schema.auditLogs.action, `%${q}%`) : undefined)).orderBy(desc(schema.auditLogs.createdAt)).limit(5000);

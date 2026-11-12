@@ -109,7 +109,7 @@ export async function lessonStatusAction(_: R | null, f: FormData): Promise<R> {
     const [l] = await db.select().from(schema.lessons).where(eq(schema.lessons.id, id));
     if (!l) throw new Error("Lesson not found.");
     if (!FLOW[l.status].includes(to)) throw new Error(`A lesson cannot move from ${l.status} to ${to}. Follow the order draft, review, approved, published.`);
-    if ((to === "approved" || to === "published") && !can(u.role, "content.review")) throw new Error("Only a reviewer (Super Admin or Curriculum Administrator) can approve or publish.");
+    if ((to === "approved" || to === "published") && !can(u, "content.review")) throw new Error("Only a reviewer (Super Admin or Curriculum Administrator) can approve or publish.");
     const settings = await getSetting("features");
     if (to === "published" && l.contentLevel !== "complete") throw new Error("This lesson is only a framework entry. Write the lesson content before publishing.");
     if (to === "published" && settings.requireReviewBeforePublish && l.reviewStatus !== "approved") throw new Error("The ministry requires theological review approval before publishing. Mark the review as approved first.");
@@ -151,7 +151,7 @@ export async function storyStatusAction(_: R | null, f: FormData): Promise<R> {
   const u = await requireAdmin("stories.write");
   return run(async () => {
     const to = str(f, "to") as ContentStatus; const id = str(f, "id");
-    await studio.setStatus(await actorOf(u), { id: u.id, role: u.role, orgId: u.orgId }, id, to);
+    await studio.setStatus(await actorOf(u), { id: u.id, role: u.role, extraPerms: u.extraPerms, orgId: u.orgId }, id, to);
     revalidatePath("/admin/stories"); revalidatePath("/stories", "layout");
     return { ok: true, message: `Story is now ${to}.` };
   });
@@ -172,7 +172,7 @@ export async function storyReviewAction(_: R | null, f: FormData): Promise<R> {
 }
 export async function questionStatusAction(_: R | null, f: FormData): Promise<R> {
   const u = await requireAdmin("questions.write");
-  return run(async () => { await setQuestionStatus(await actorOf(u), { id: u.id, role: u.role, orgId: u.orgId }, str(f, "id"), str(f, "to") as "draft" | "review" | "published" | "archived"); revalidatePath("/admin/questions"); });
+  return run(async () => { await setQuestionStatus(await actorOf(u), { id: u.id, role: u.role, extraPerms: u.extraPerms, orgId: u.orgId }, str(f, "id"), str(f, "to") as "draft" | "review" | "published" | "archived"); revalidatePath("/admin/questions"); });
 }
 export async function saveQuestionAction(_: R | null, f: FormData): Promise<R> {
   const u = await requireAdmin("questions.write");
@@ -262,7 +262,7 @@ export async function approveAllAction(scope: "lessons" | "stories" | "all", _: 
   return run(async () => {
     if (f.get("confirm") !== "on") throw new Error("Tick the box to confirm that you are approving this content as its reviewer.");
     const { approveAndPublishAll } = await import("@/server/services/bulk-review");
-    const r = await approveAndPublishAll(await actorOf(u), { id: u.id, role: u.role }, scope);
+    const r = await approveAndPublishAll(await actorOf(u), { id: u.id, role: u.role, extraPerms: u.extraPerms }, scope);
     revalidatePath("/admin/review"); revalidatePath("/", "layout");
     return { ok: true, message: `Approved and published ${r.lessons} lessons and ${r.stories} stories.` };
   });
@@ -285,7 +285,7 @@ export async function approveAllQuestionsAction(_: R | null, f: FormData): Promi
   return run(async () => {
     if (f.get("confirm") !== "on") throw new Error("Tick the box to confirm you are approving these questions as reviewer.");
     const { approveAllQuestions } = await import("@/server/services/bulk-review");
-    const r = await approveAllQuestions(await actorOf(u), { id: u.id, role: u.role });
+    const r = await approveAllQuestions(await actorOf(u), { id: u.id, role: u.role, extraPerms: u.extraPerms });
     revalidatePath("/admin/questions");
     return { ok: true, message: `Published ${r.questions} questions.` };
   });

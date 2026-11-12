@@ -22,7 +22,7 @@ export default async function Finance() {
   const userNames = new Map((await db.select({ id: schema.users.id, n: schema.users.fullName }).from(schema.users).where(sql`${schema.users.id} in (select user_id from subscriptions where user_id is not null)`)).map((x) => [x.id, x.n]));
   const totals = await db.select({ status: schema.payments.status, currency: schema.payments.currency, n: sql<number>`count(*)::int`, total: sql<number>`coalesce(sum(${schema.payments.amountMinor}),0)::bigint::int` }).from(schema.payments).groupBy(schema.payments.status, schema.payments.currency);
   const prov = providerStatus();
-  const manage = can(me.role, "entitlements.manage");
+  const manage = can(me, "entitlements.manage");
   const now = new Date();
   void and;
   return (

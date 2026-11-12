@@ -12,7 +12,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function Home({ searchParams }: { searchParams: Promise<{ preview?: string }> }) {
   const user = await optionalUser();
   const sp = await searchParams;
-  const preview = sp.preview === "draft" && can(user?.role, "site.edit"); // only editors can see unpublished changes
+  const preview = sp.preview === "draft" && can(user, "site.edit"); // only editors can see unpublished changes
   const page = await loadPage("home", { preview, role: user?.role ?? null });
   if (!page) return <p className="container-page py-20 text-center">The homepage has not been published yet.</p>;
   return (

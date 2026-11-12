@@ -17,7 +17,7 @@ export default async function CustomPage({ params, searchParams }: P) {
   const { slug } = await params;
   const sp = await searchParams;
   const user = await optionalUser();
-  const preview = sp.preview === "draft" && can(user?.role, "site.edit");
+  const preview = sp.preview === "draft" && can(user, "site.edit");
   const page = await loadPage(slug, { preview, role: user?.role ?? null });
   if (!page || page.slug === "home") notFound();
   return (

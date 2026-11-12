@@ -13,11 +13,11 @@ export const metadata = { title: "Edit story", robots: { index: false } };
 export default async function EditStory({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const user = await requireUser(["teacher", "super_admin", "curriculum_admin", "content_editor"]);
-  const u = { id: user.id, role: user.role, orgId: user.orgId };
+  const u = { id: user.id, role: user.role, extraPerms: user.extraPerms, orgId: user.orgId };
   const s = await loadForEdit(u, id);
   if (!s) notFound();
   const versions = await versionsOf(u, id);
-  const reviewer = can(user.role, "content.review");
+  const reviewer = can(user, "content.review");
   return (
     <div className="space-y-5">
       <Crumbs items={[{ href: "/studio", label: "Studio" }, { label: s.title }]} />

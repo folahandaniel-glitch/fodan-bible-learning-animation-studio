@@ -9,7 +9,7 @@ import type { ContentStatus, Scene } from "@/server/db/schema";
 
 const str = (f: FormData, k: string) => String(f.get(k) ?? "").trim();
 const ROLES = ["teacher", "super_admin", "curriculum_admin", "content_editor"] as const;
-const su = (u: Awaited<ReturnType<typeof requireUser>>) => ({ id: u.id, role: u.role, orgId: u.orgId });
+const su = (u: Awaited<ReturnType<typeof requireUser>>) => ({ id: u.id, role: u.role, extraPerms: u.extraPerms, orgId: u.orgId });
 const fail = (e: unknown): ActionResult => { if (e && typeof e === "object" && "digest" in e) throw e; return { error: (e as Error).message }; };
 
 export async function fromTemplateAction(slug: string, _: ActionResult): Promise<ActionResult> {

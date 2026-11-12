@@ -12,8 +12,8 @@ import { normAnswer } from "./exams";
 import { CLASS_SLUGS } from "@/content/story-types";
 import type { Role } from "../db/schema";
 
-export interface QUser { id: string; role: Role; orgId: string | null }
-export const canWriteQuestions = (u: QUser) => can(u.role, "questions.write") || (u.role === "teacher") || u.role === "org_admin";
+export interface QUser { id: string; role: Role; extraPerms?: string[]; orgId: string | null }
+export const canWriteQuestions = (u: QUser) => can(u, "questions.write") || (u.role === "teacher") || u.role === "org_admin";
 
 const MAX = 5 * 1024 * 1024;
 
@@ -52,7 +52,7 @@ export interface ImportOptions { classLevelSlug?: string; topic?: string; status
 export async function commitImport(actor: Actor, user: QUser, list: ParsedQuestion[], opts: ImportOptions) {
   if (!canWriteQuestions(user)) throw new Error("Not allowed.");
   const db = await getDb();
-  const staff = can(user.role, "questions.write");
+  const staff = can(user, "questions.write");
   const status = staff ? opts.status : "published";
   const IDS = ["a", "b", "c", "d", "e", "f", "g", "h"];
   const existing = await db.select({ text: schema.questions.text }).from(schema.questions).where(or(isNull(schema.questions.orgId), user.orgId ? eq(schema.questions.orgId, user.orgId) : isNull(schema.questions.orgId)));
@@ -78,13 +78,13 @@ export async function commitImport(actor: Actor, user: QUser, list: ParsedQuesti
 
 export async function listQuestions(user: QUser, filter: { q?: string; classLevelSlug?: string; status?: string } = {}) {
   const db = await getDb();
-  const rows = await db.select().from(schema.questions).where(can(user.role, "questions.write") ? undefined : or(eq(schema.questions.orgId, user.orgId ?? "00000000-0000-0000-0000-000000000000"), eq(schema.questions.authorId, user.id))).orderBy(desc(schema.questions.createdAt)).limit(400);
+  const rows = await db.select().from(schema.questions).where(can(user, "questions.write") ? undefined : or(eq(schema.questions.orgId, user.orgId ?? "00000000-0000-0000-0000-000000000000"), eq(schema.questions.authorId, user.id))).orderBy(desc(schema.questions.createdAt)).limit(400);
   return rows.filter((r) => (filter.q ? r.text.toLowerCase().includes(filter.q.toLowerCase()) : true) && (filter.classLevelSlug ? r.classLevelSlug === filter.classLevelSlug || (r.classMin != null && CLASS_SLUGS.indexOf(filter.classLevelSlug) + 1 >= r.classMin && CLASS_SLUGS.indexOf(filter.classLevelSlug) + 1 <= (r.classMax ?? 12)) : true) && (filter.status ? r.status === filter.status : true));
 }
 
 export async function setQuestionStatus(actor: Actor, user: QUser, id: string, status: "draft" | "review" | "published" | "archived") {
-  if (!can(user.role, "questions.write")) throw new Error("Not allowed.");
-  if ((status === "published") && !can(user.role, "content.review") && user.role !== "content_editor" && user.role !== "curriculum_admin" && user.role !== "super_admin") throw new Error("Only a reviewer can publish.");
+  if (!can(user, "questions.write")) throw new Error("Not allowed.");
+  if ((status === "published") && !can(user, "content.review") && user.role !== "content_editor" && user.role !== "curriculum_admin" && user.role !== "super_admin") throw new Error("Only a reviewer can publish.");
   const db = await getDb();
   await db.update(schema.questions).set({ status, reviewerId: user.id, updatedAt: new Date() }).where(eq(schema.questions.id, id));
   await audit(actor, `question.${status}`, { type: "question", id });

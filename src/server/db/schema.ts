@@ -35,6 +35,8 @@ export const users = pgTable("users", {
   passwordHash: text("password_hash").notNull(),
   role: text("role").$type<Role>().notNull(),
   status: text("status").notNull().default("active"), // active | pending | suspended | deactivated
+  /** Extra admin permissions granted to this person by the Super Admin (see GRANTABLE in lib/permissions). */
+  extraPerms: jsonb("extra_perms").$type<string[]>().notNull().default([]),
   mustChangePassword: boolean("must_change_password").notNull().default(false),
   orgId: uuid("org_id").references(() => organizations.id),
   classLevelSlug: text("class_level_slug"), ageBand: text("age_band"),

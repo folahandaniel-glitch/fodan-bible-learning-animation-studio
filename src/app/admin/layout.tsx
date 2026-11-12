@@ -35,5 +35,5 @@ const ITEMS: (NavItem & { perm: Perm })[] = [
 
 export default async function AdminLayout({ children }: { children: ReactNode }) {
   const user = await requireAdmin();
-  return <PortalShell user={user} nav={ITEMS.filter((i) => can(user.role, i.perm))}>{children}</PortalShell>;
+  return <PortalShell user={user} nav={ITEMS.filter((i) => can(user, i.perm))}>{children}</PortalShell>;
 }

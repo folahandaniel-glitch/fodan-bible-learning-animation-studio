@@ -5,7 +5,7 @@ import { audit, type Actor } from "../audit";
 import { hashPassword, passwordProblem } from "../auth/password";
 import { friendlyCode, randomToken, temporaryPassword } from "../crypto";
 import { makeAlias, normUser } from "./auth";
-import { can, ROLE_LABELS } from "@/lib/permissions";
+import { can, GRANTABLE_PERMS, ROLE_LABELS } from "@/lib/permissions";
 import type { Role } from "../db/schema";
 
 export interface Admin { id: string; role: Role }
@@ -110,4 +110,19 @@ export async function eraseUser(actor: Actor, admin: Admin, userId: string) {
     await tx.update(schema.dataRequests).set({ status: "done", handledAt: new Date() }).where(and(eq(schema.dataRequests.userId, userId), eq(schema.dataRequests.kind, "deletion")));
   });
   await audit(actor, "privacy.erase_user", { type: "user", id: userId }, { role: u.role });
+}
+
+/** Super Admin only: choose exactly which admin areas this person may use, on top of their role. Recorded with before/after in the audit log. Takes effect on their next request. */
+export async function setExtraPerms(actor: Actor, admin: Admin, userId: string, perms: string[]) {
+  if (admin.role !== "super_admin") throw new Error("Only the Super Admin can assign admin permissions.");
+  const db = await getDb();
+  const [u] = await db.select().from(schema.users).where(eq(schema.users.id, userId));
+  if (!u) throw new Error("User not found.");
+  if (u.role === "student" || u.role === "parent" || u.role === "developer_admin") throw new Error("Learners and the developer account cannot receive admin permissions.");
+  if (u.role === "super_admin") throw new Error("The Super Admin already holds every permission.");
+  const clean = Array.from(new Set(perms)).filter((p) => (GRANTABLE_PERMS as string[]).includes(p)).sort();
+  const before = (u.extraPerms ?? []) as string[];
+  await db.update(schema.users).set({ extraPerms: clean, updatedAt: new Date() }).where(eq(schema.users.id, userId));
+  await audit(actor, "user.permissions_set", { type: "user", id: userId }, { before, after: clean });
+  return clean;
 }

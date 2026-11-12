@@ -22,7 +22,7 @@ export default async function AdminHome({ searchParams }: { searchParams: Promis
     <div className="space-y-6">
       <PageHeader title="Dashboard" subtitle={`Signed in as ${user.fullName}. Every figure below comes from the database; nothing is estimated.`} />
       {sp.denied && <Alert tone="warn">Your role does not have access to that area.</Alert>}
-      {can(user.role, "integrations.view") && launchBlockers.length > 0 && <Alert tone="warn"><strong>Before launch:</strong> {launchBlockers.map((i) => i.name).join(", ")} still need attention. <Link href="/admin/integrations" className="font-bold">Open integrations</Link>.</Alert>}
+      {can(user, "integrations.view") && launchBlockers.length > 0 && <Alert tone="warn"><strong>Before launch:</strong> {launchBlockers.map((i) => i.name).join(", ")} still need attention. <Link href="/admin/integrations" className="font-bold">Open integrations</Link>.</Alert>}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Stat label="Registered users" value={m.users} />
         <Stat label="Students" value={m.students} />
@@ -48,7 +48,7 @@ export default async function AdminHome({ searchParams }: { searchParams: Promis
       </div>
       <section className="card card-pad"><h2 className="mb-2 text-lg font-bold">Recent administrative actions</h2>
         {m.recent.length ? <ul className="divide-y divide-line text-sm">{m.recent.map((a) => <li key={a.id} className="flex flex-wrap items-center justify-between gap-2 py-1.5"><span><StatusBadge status="active" /> <strong>{a.action}</strong> by {a.actorLabel ?? "system"}</span><span className="text-xs text-mist">{a.createdAt.toLocaleString()}</span></li>)}</ul> : <p className="text-sm text-mist">No actions recorded yet.</p>}
-        {can(user.role, "audit.view") && <Link href="/admin/audit" className="btn btn-ghost btn-sm mt-3">Open the audit log</Link>}
+        {can(user, "audit.view") && <Link href="/admin/audit" className="btn btn-ghost btn-sm mt-3">Open the audit log</Link>}
       </section>
     </div>
   );
