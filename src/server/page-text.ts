@@ -31,3 +31,29 @@ export async function getPageText(id: string, vars: Record<string, string | numb
     subtitle: fill(pick("subtitle", reg?.defaults.subtitle || fallbackSubtitle)),
   };
 }
+
+/** Short labels used on the site header and the sign-in screen, editable in Admin → Page text. */
+export const UI_TEXT = {
+  "header.dashboard": { group: "Site header", label: "Signed-in dashboard button", def: "My dashboard" },
+  "header.signOut": { group: "Site header", label: "Sign out button", def: "Sign out" },
+  "header.signIn": { group: "Site header", label: "Sign in button", def: "Sign in" },
+  "header.register": { group: "Site header", label: "Register button", def: "Register" },
+  "header.menu": { group: "Site header", label: "Phone menu button", def: "Menu" },
+  "reg.student": { group: "Register choices", label: "Student", def: "Child or student" },
+  "reg.parent": { group: "Register choices", label: "Parent", def: "Parent or guardian" },
+  "reg.teacher": { group: "Register choices", label: "Teacher", def: "Sunday School teacher" },
+  "reg.org_admin": { group: "Register choices", label: "Church or school", def: "Church or school" },
+  "login.title": { group: "Sign-in screen", label: "Title", def: "Sign in" },
+  "login.intro": { group: "Sign-in screen", label: "Welcome line", def: "Welcome back. Sign in to continue learning." },
+  "login.button": { group: "Sign-in screen", label: "Button", def: "Sign in" },
+  "login.remember": { group: "Sign-in screen", label: "Keep-me-signed-in tick box", def: "Keep me signed in on this device for 30 days" },
+  "login.forgot": { group: "Sign-in screen", label: "Forgot password link", def: "Forgot your password?" },
+  "login.newHere": { group: "Sign-in screen", label: "Register prompt", def: "New here? Register:" },
+  "login.note": { group: "Sign-in screen", label: "Note under the register buttons", def: "You can register and sign in before paying. Lessons, quizzes, exams and games open once your plan payment is confirmed." },
+} as const;
+export type UiKey = keyof typeof UI_TEXT;
+
+export async function getUiText(): Promise<Record<UiKey, string>> {
+  const saved = (await getSetting("uiText")) as Record<string, string>;
+  return Object.fromEntries(Object.entries(UI_TEXT).map(([k, v]) => [k, saved[k]?.trim() ? saved[k] : v.def])) as Record<UiKey, string>;
+}

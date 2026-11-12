@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { getUiText } from "@/server/page-text";
 import Link from "next/link";
 import { ActionForm, Check, Field, PasswordInput } from "@/components/forms";
 import { loginAction } from "@/app/actions/auth";
@@ -11,28 +12,29 @@ export const metadata: Metadata = { title: "Sign in" };
 export default async function Login({ searchParams }: { searchParams: Promise<{ next?: string; reset?: string; denied?: string }> }) {
   const sp = await searchParams;
   const f = await getSetting("features");
+  const ui = await getUiText();
   const label = f.loginMode === "email" ? "Email address" : f.loginMode === "username" ? "Username" : "Username or email";
   return (
     <>
-      <h1 className="text-2xl font-bold">Sign in</h1>
-      <p className="mb-4 text-sm text-mist">Welcome back. Sign in to continue learning.</p>
+      <h1 className="text-2xl font-bold">{ui["login.title"]}</h1>
+      <p className="mb-4 text-sm text-mist">{ui["login.intro"]}</p>
       {sp.reset && <div className="mb-4"><Alert tone="ok">Your password was changed. Please sign in.</Alert></div>}
-      <ActionForm action={loginAction} submit="Sign in" submitClass="btn btn-primary w-full">
+      <ActionForm action={loginAction} submit={ui["login.button"]} submitClass="btn btn-primary w-full">
         <input type="hidden" name="next" value={safeNext(sp.next) ?? ""} />
         <Field label={label} name="identifier" required autoComplete="username" />
         <PasswordInput autoComplete="current-password" />
-        <Check name="remember" label="Keep me signed in on this device for 30 days" />
-        <p className="text-sm"><Link href="/forgot-password">Forgot your password?</Link></p>
+        <Check name="remember" label={ui["login.remember"]} />
+        <p className="text-sm"><Link href="/forgot-password">{ui["login.forgot"]}</Link></p>
       </ActionForm>
       <hr className="my-5 border-line" />
-      <p className="text-sm font-semibold">New here? Register:</p>
+      <p className="text-sm font-semibold">{ui["login.newHere"]}</p>
       <div className="mt-2 grid gap-2 sm:grid-cols-2">
-        <Link href="/register/student" className="btn btn-ghost btn-sm">Child or student</Link>
-        <Link href="/register/parent" className="btn btn-ghost btn-sm">Parent or guardian</Link>
-        <Link href="/register/teacher" className="btn btn-ghost btn-sm">Sunday School teacher</Link>
-        <Link href="/register/org_admin" className="btn btn-ghost btn-sm">Church or school</Link>
+        <Link href="/register/student" className="btn btn-ghost btn-sm">{ui["reg.student"]}</Link>
+        <Link href="/register/parent" className="btn btn-ghost btn-sm">{ui["reg.parent"]}</Link>
+        <Link href="/register/teacher" className="btn btn-ghost btn-sm">{ui["reg.teacher"]}</Link>
+        <Link href="/register/org_admin" className="btn btn-ghost btn-sm">{ui["reg.org_admin"]}</Link>
       </div>
-      <p className="mt-4 text-xs text-mist">You can register and sign in before paying. Lessons, quizzes, exams and games open once your plan payment is confirmed. <Link href="/plans">See plans</Link>.</p>
+      <p className="mt-4 text-xs text-mist">{ui["login.note"]} <Link href="/plans">See plans</Link>.</p>
     </>
   );
 }

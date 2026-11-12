@@ -1,9 +1,10 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { getSetting } from "@/server/settings";
+import { getUiText } from "@/server/page-text";
 import { navPages } from "@/server/services/site";
 import { optionalUser } from "@/server/guards";
-import { homeFor, ROLE_LABELS } from "@/lib/permissions";
+import { hasAdminAccess, homeFor, ROLE_LABELS } from "@/lib/permissions";
 import { logoutAction } from "@/app/actions/auth";
 import { Logo } from "./ui";
 import { getDb, schema } from "@/server/db";
@@ -11,7 +12,7 @@ import { and, eq, isNull, sql } from "drizzle-orm";
 import type { SessionUser } from "@/server/auth/session";
 
 export async function SiteHeader() {
-  const [nav, extra, user] = await Promise.all([getSetting("nav"), navPages(), optionalUser()]);
+  const [nav, extra, user, ui] = await Promise.all([getSetting("nav"), navPages(), optionalUser(), getUiText()]);
   const items = [...nav, ...extra.map((p) => ({ label: p.title, href: `/p/${p.slug}` }))];
   return (
     <header className="sticky top-0 z-40 border-b border-line bg-white/95 backdrop-blur no-print">
@@ -24,35 +25,35 @@ export async function SiteHeader() {
         <div className="hidden items-center gap-2 lg:flex">
           {user ? (
             <>
-              <Link href={homeFor(user.role)} className="btn btn-navy btn-sm">My dashboard</Link>
-              <form action={logoutAction}><button className="btn btn-ghost btn-sm" type="submit">Sign out</button></form>
+              <Link href={homeFor(user.role)} className="btn btn-navy btn-sm">{ui["header.dashboard"]}</Link>
+              <form action={logoutAction}><button className="btn btn-ghost btn-sm" type="submit">{ui["header.signOut"]}</button></form>
             </>
           ) : (
             <>
-              <Link href="/login" className="btn btn-ghost btn-sm">Sign in</Link>
+              <Link href="/login" className="btn btn-ghost btn-sm">{ui["header.signIn"]}</Link>
               <details className="relative">
-                <summary className="btn btn-gold btn-sm cursor-pointer list-none">Register ▾</summary>
+                <summary className="btn btn-gold btn-sm cursor-pointer list-none">{ui["header.register"]} ▾</summary>
                 <div className="absolute right-0 mt-2 w-60 rounded-xl border border-line bg-white p-2 shadow-xl">
-                  <Link className="block rounded-lg px-3 py-2 text-sm no-underline hover:bg-sand" href="/register/student">Child or student</Link>
-                  <Link className="block rounded-lg px-3 py-2 text-sm no-underline hover:bg-sand" href="/register/parent">Parent or guardian</Link>
-                  <Link className="block rounded-lg px-3 py-2 text-sm no-underline hover:bg-sand" href="/register/teacher">Sunday School teacher</Link>
-                  <Link className="block rounded-lg px-3 py-2 text-sm no-underline hover:bg-sand" href="/register/org_admin">Church or school</Link>
+                  <Link className="block rounded-lg px-3 py-2 text-sm no-underline hover:bg-sand" href="/register/student">{ui["reg.student"]}</Link>
+                  <Link className="block rounded-lg px-3 py-2 text-sm no-underline hover:bg-sand" href="/register/parent">{ui["reg.parent"]}</Link>
+                  <Link className="block rounded-lg px-3 py-2 text-sm no-underline hover:bg-sand" href="/register/teacher">{ui["reg.teacher"]}</Link>
+                  <Link className="block rounded-lg px-3 py-2 text-sm no-underline hover:bg-sand" href="/register/org_admin">{ui["reg.org_admin"]}</Link>
                 </div>
               </details>
             </>
           )}
         </div>
         <details className="relative lg:hidden">
-          <summary className="btn btn-ghost btn-sm cursor-pointer list-none" aria-label="Open menu">Menu ☰</summary>
+          <summary className="btn btn-ghost btn-sm cursor-pointer list-none" aria-label="Open menu">{ui["header.menu"]} ☰</summary>
           <div className="absolute right-0 mt-2 w-64 rounded-xl border border-line bg-white p-2 shadow-xl">
             {items.map((n) => <Link key={n.href} href={n.href} className="block rounded-lg px-3 py-2 text-sm font-semibold no-underline hover:bg-sand">{n.label}</Link>)}
             <hr className="my-2 border-line" />
-            {user ? (<><Link href={homeFor(user.role)} className="block rounded-lg px-3 py-2 text-sm font-semibold no-underline hover:bg-sand">My dashboard</Link><form action={logoutAction}><button className="block w-full rounded-lg px-3 py-2 text-left text-sm hover:bg-sand" type="submit">Sign out</button></form></>) : (
+            {user ? (<><Link href={homeFor(user.role)} className="block rounded-lg px-3 py-2 text-sm font-semibold no-underline hover:bg-sand">{ui["header.dashboard"]}</Link><form action={logoutAction}><button className="block w-full rounded-lg px-3 py-2 text-left text-sm hover:bg-sand" type="submit">{ui["header.signOut"]}</button></form></>) : (
               <>
-                <Link href="/login" className="block rounded-lg px-3 py-2 text-sm font-semibold no-underline hover:bg-sand">Sign in</Link>
-                <Link href="/register/student" className="block rounded-lg px-3 py-2 text-sm no-underline hover:bg-sand">Register a child</Link>
-                <Link href="/register/parent" className="block rounded-lg px-3 py-2 text-sm no-underline hover:bg-sand">Register as a parent</Link>
-                <Link href="/register/teacher" className="block rounded-lg px-3 py-2 text-sm no-underline hover:bg-sand">Register as a teacher</Link>
+                <Link href="/login" className="block rounded-lg px-3 py-2 text-sm font-semibold no-underline hover:bg-sand">{ui["header.signIn"]}</Link>
+                <Link href="/register/student" className="block rounded-lg px-3 py-2 text-sm no-underline hover:bg-sand">{ui["reg.student"]}</Link>
+                <Link href="/register/parent" className="block rounded-lg px-3 py-2 text-sm no-underline hover:bg-sand">{ui["reg.parent"]}</Link>
+                <Link href="/register/teacher" className="block rounded-lg px-3 py-2 text-sm no-underline hover:bg-sand">{ui["reg.teacher"]}</Link>
               </>
             )}
           </div>
@@ -102,7 +103,9 @@ export async function SiteFooter() {
 
 export interface NavItem { href: string; label: string; icon?: string }
 
-export async function PortalShell({ user, nav, children, current }: { user: SessionUser; nav: NavItem[]; children: ReactNode; current?: string }) {
+export async function PortalShell({ user, nav: baseNav, children, current }: { user: SessionUser; nav: NavItem[]; children: ReactNode; current?: string }) {
+  /* A teacher or church administrator the Super Admin has given edit permissions gets a link to the admin area. */
+  const nav: NavItem[] = hasAdminAccess(user) && !baseNav.some((x) => x.href === "/admin") ? [...baseNav, { href: "/admin", label: "Admin area" }] : baseNav;
   const db = await getDb();
   const [{ n }] = await db.select({ n: sql<number>`count(*)::int` }).from(schema.notifications).where(and(eq(schema.notifications.userId, user.id), isNull(schema.notifications.readAt)));
   return (
